@@ -10,10 +10,11 @@ type RouteTree struct {
 }
 
 type routeTreeNode struct {
-	edges nodes
-
+	edges  nodes
 	prefix string
 	label  byte
+
+	Handler http.Handler
 }
 
 type nodes []*routeTreeNode
@@ -80,7 +81,7 @@ func (n *routeTreeNode) Insert(method uint, pattern string, handler http.Handler
 		if n == nil {
 			child := &routeTreeNode{label: label, prefix: search}
 			hn := parent.addChild(child)
-			// set handler
+			hn.setHandler(handler)
 			return hn
 		}
 
@@ -152,6 +153,10 @@ func (n *routeTreeNode) addChild(child *routeTreeNode) *routeTreeNode {
 	n.edges.Sort()
 
 	return child
+}
+
+func (n *routeTreeNode) setHandler(handler http.Handler) {
+	n.Handler = handler
 }
 
 func longestPrefix(key string, prefix string) int {

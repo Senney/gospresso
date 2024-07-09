@@ -8,11 +8,11 @@ import (
 type Mux struct {
 	handler http.Handler
 	pool    *sync.Pool
-	routes  map[string]http.HandlerFunc
+	routes  *RouteTree
 }
 
 func NewMux() *Mux {
-	mux := &Mux{pool: &sync.Pool{}, routes: make(map[string]http.HandlerFunc)}
+	mux := &Mux{pool: &sync.Pool{}, routes: NewRouteTree()}
 
 	// todo: initialize mux.pool.New
 
@@ -36,7 +36,7 @@ func (mx *Mux) handle(method uint, pattern string, handlerFn http.HandlerFunc) {
 		mx.handler = http.HandlerFunc(mx.routeHTTP)
 	}
 
-	mx.routes[pattern] = handlerFn
+	mx.routes.root.Insert(method, pattern, handlerFn)
 }
 
 func (mx *Mux) routeHTTP(res http.ResponseWriter, req *http.Request) {
@@ -46,12 +46,12 @@ func (mx *Mux) routeHTTP(res http.ResponseWriter, req *http.Request) {
 		path = "/"
 	}
 
-	handler, ok := mx.routes[path]
+	route := mx.routes.root.Search(mGET, path)
 
-	if !ok {
+	if route == nil {
 		http.NotFound(res, req)
 		return
 	}
 
-	handler.ServeHTTP(res, req)
+	route.Handler.ServeHTTP(res, req)
 }
