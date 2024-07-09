@@ -10,6 +10,7 @@ func TestInsertRoute(t *testing.T) {
 	tree.root.Insert(mGET, "/root", http.NotFoundHandler())
 	tree.root.Insert(mGET, "/root/foo", http.NotFoundHandler())
 	tree.root.Insert(mGET, "/root/foo/1", http.NotFoundHandler())
+	tree.root.Insert(mGET, "/", http.NotFoundHandler())
 }
 
 func TestFindRoute(t *testing.T) {
@@ -38,5 +39,29 @@ func TestFindRoute(t *testing.T) {
 			}
 		})
 	}
+}
 
+func FuzzSearch(f *testing.F) {
+	tree := NewRouteTree()
+	tree.root.Insert(mGET, "/root", http.NotFoundHandler())
+	tree.root.Insert(mGET, "/root/foo", http.NotFoundHandler())
+	tree.root.Insert(mGET, "/root/foo/1", http.NotFoundHandler())
+
+	f.Add("/root")
+	f.Add("/root/foo")
+
+	f.Fuzz(func(t *testing.T, s string) {
+		tree.root.Search(mGET, s)
+	})
+}
+
+func FuzzInsert(f *testing.F) {
+	tree := NewRouteTree()
+	handler := http.NotFoundHandler()
+	f.Add("/root")
+	f.Add("/root/foo")
+
+	f.Fuzz(func(t *testing.T, s string) {
+		tree.root.Insert(mGET, s, handler)
+	})
 }

@@ -38,6 +38,10 @@ func (n *routeTreeNode) Search(method uint, pattern string) *routeTreeNode {
 	search := pattern
 
 	for {
+		if len(search) == 0 {
+			return nil
+		}
+
 		label := search[0]
 		matchingEdge := n.getEdge(label)
 
@@ -119,11 +123,11 @@ func (n *routeTreeNode) Insert(method uint, pattern string, handler http.Handler
 
 		// Add the new node for our new child
 		newNode := &routeTreeNode{
-			label:  search[commonPrefix],
-			prefix: search[commonPrefix:],
+			label:  search[0],
+			prefix: search,
 		}
+		newNode.setHandler(handler)
 		child.addChild(newNode)
-		// TODO: Set handler
 	}
 }
 
