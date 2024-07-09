@@ -56,12 +56,12 @@ func FuzzSearch(f *testing.F) {
 }
 
 func FuzzInsert(f *testing.F) {
-	tree := NewRouteTree()
 	handler := http.NotFoundHandler()
 	f.Add("/root")
 	f.Add("/root/foo")
 
 	f.Fuzz(func(t *testing.T, s string) {
+		tree := NewRouteTree()
 		tree.root.Insert(mGET, s, handler)
 	})
 }

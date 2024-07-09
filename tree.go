@@ -131,6 +131,39 @@ func (n *routeTreeNode) Insert(method uint, pattern string, handler http.Handler
 	}
 }
 
+func (n *routeTreeNode) Walk(visitor func(node *routeTreeNode)) {
+	if n == nil {
+		return
+	}
+
+	var stack nodes = make(nodes, 1)
+	stack[0] = n
+
+	for len(stack) != 0 {
+		top := stack[0]
+		stack = append(stack, top.edges...)
+
+		visitor(top)
+
+		stack = stack[1:]
+	}
+}
+
+func (n *routeTreeNode) Len() int {
+	if n == nil {
+		return 0
+	}
+
+	i := 0
+	n.Walk(func(node *routeTreeNode) {
+		if node.Handler != nil {
+			i++
+		}
+	})
+
+	return i
+}
+
 func (n *routeTreeNode) getEdge(label byte) *routeTreeNode {
 	for i := 0; i < len(n.edges); i++ {
 		if n.edges[i].label == label {
